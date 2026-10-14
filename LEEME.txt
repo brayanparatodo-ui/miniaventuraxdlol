@@ -1,0 +1,22 @@
+MINIAVENTURA — PROYECTO BASE PARA ANDROID
+
+Qué contiene
+- main.py: adaptación inicial del juego a Kivy para pantallas táctiles.
+- buildozer.spec: configuración inicial para compilar como APK con Buildozer.
+
+Importante
+- Esto es el proyecto fuente, NO un APK ya compilado.
+- El código original usaba Tkinter y winsound, que no se ejecutan directamente en Android.
+- Esta adaptación es una versión inicial: conserva la idea de 3 mundos, gemas, monedas, máscaras y controles táctiles, pero no reproduce todos los detalles del juego original.
+- Debe probarse y ajustarse en un dispositivo Android antes de considerarlo terminado.
+
+Compilación recomendada en Windows 10
+Buildozer normalmente se usa desde Linux/WSL, no directamente desde Windows.
+1. Instala WSL 2 con Ubuntu.
+2. En Ubuntu instala las dependencias de Buildozer según su documentación oficial.
+3. Copia esta carpeta a un directorio de Linux, no a /mnt/c, si es posible.
+4. Ejecuta:
+   buildozer android debug
+5. El APK de prueba suele aparecer en la carpeta bin/.
+
+Antes de distribuirlo, prueba la orientación, controles, rendimiento y compatibilidad en tu celular.
