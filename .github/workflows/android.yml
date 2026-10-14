@@ -8,6 +8,10 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
@@ -31,8 +35,10 @@ jobs:
             zlib1g-dev libncurses5-dev libncursesw5-dev \
             cmake libffi-dev libssl-dev automake
 
-      - name: Configurar Android SDK
+      - name: Instalar Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: "latest"
 
       - name: Instalar paquetes Android
         run: |
