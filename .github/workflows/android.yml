@@ -6,11 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    env:
-      ANDROID_HOME: /usr/local/lib/android/sdk
-      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Descargar repositorio
@@ -27,7 +23,7 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Preparar dependencias de Linux
+      - name: Instalar dependencias Linux
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -35,16 +31,15 @@ jobs:
             zlib1g-dev libncurses5-dev libncursesw5-dev \
             cmake libffi-dev libssl-dev automake
 
-      - name: Instalar Android SDK
+      - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Instalar herramientas Android
         run: |
           sdkmanager --install \
             "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0" \
-            "cmdline-tools;latest"
+            "platforms;android-33" \
+            "build-tools;33.0.2"
           yes | sdkmanager --licenses
 
       - name: Instalar Buildozer
