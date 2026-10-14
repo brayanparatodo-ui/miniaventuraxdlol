@@ -12,12 +12,12 @@ jobs:
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Instalar Python
+      - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Instalar Java
+      - name: Configurar Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -33,14 +33,12 @@ jobs:
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: Instalar herramientas Android
-        run: |
-          sdkmanager --install \
-            "platform-tools" \
-            "platforms;android-33" \
-            "build-tools;33.0.2"
-          yes | sdkmanager --licenses
+        with:
+          packages: |
+            platform-tools
+            platforms;android-33
+            build-tools;33.0.2
+          accept-android-sdk-licenses: true
 
       - name: Instalar Buildozer
         run: |
