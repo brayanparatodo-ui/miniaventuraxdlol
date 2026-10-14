@@ -33,12 +33,13 @@ jobs:
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platform-tools
-            platforms;android-33
-            build-tools;33.0.2
-          accept-android-sdk-licenses: true
+
+      - name: Instalar paquetes Android
+        run: |
+          sdkmanager --install "platform-tools"
+          sdkmanager --install "platforms;android-33"
+          sdkmanager --install "build-tools;33.0.2"
+          yes | sdkmanager --licenses
 
       - name: Instalar Buildozer
         run: |
