@@ -68,16 +68,19 @@ jobs:
 
       - name: Comprobar AIDL
         run: |
-          AIDL="$ANDROID_HOME/build-tools/33.0.2/aidl"
+          echo "SDK: $ANDROID_HOME"
+          echo "Build-tools instalados:"
+          ls -la "$ANDROID_HOME/build-tools" || true
 
-          if [ ! -x "$AIDL" ]; then
-            echo "ERROR: AIDL no se encontró."
-            find "$ANDROID_HOME/build-tools" -name aidl -type f || true
+          echo "Buscando AIDL:"
+          find "$ANDROID_HOME" -type f -name aidl
+
+          if [ ! -x "$ANDROID_HOME/build-tools/33.0.2/aidl" ]; then
+            echo "ERROR: No se encontró AIDL en build-tools 33.0.2"
             exit 1
           fi
 
-          echo "AIDL encontrado:"
-          "$AIDL" --version
+          "$ANDROID_HOME/build-tools/33.0.2/aidl" --help
 
       - name: Instalar Buildozer
         run: |
