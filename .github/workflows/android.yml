@@ -1,4 +1,3 @@
-
 name: Compilar Miniaventura APK
 
 on:
@@ -9,8 +8,8 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      ANDROID_HOME: /usr/local/lib/android/sdk
-      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
+      ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
 
     steps:
       - name: Descargar repositorio
@@ -31,39 +30,54 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            git zip unzip autoconf libtool pkg-config \
+            git zip unzip wget \
+            autoconf libtool pkg-config \
             zlib1g-dev libncurses5-dev libncursesw5-dev \
             cmake libffi-dev libssl-dev automake
 
       - name: Instalar herramientas Android
         run: |
           mkdir -p "$ANDROID_HOME/cmdline-tools"
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/android-tools.zip
-          rm -rf /tmp/android-tools
+          wget -q \
+            https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
+            -O /tmp/android-tools.zip
+
           mkdir -p /tmp/android-tools
           unzip -q /tmp/android-tools.zip -d /tmp/android-tools
+
           rm -rf "$ANDROID_HOME/cmdline-tools/latest"
           mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
-          cp -a /tmp/android-tools/cmdline-tools/. "$ANDROID_HOME/cmdline-tools/latest/"
+
+          cp -a /tmp/android-tools/cmdline-tools/. \
+            "$ANDROID_HOME/cmdline-tools/latest/"
+
           echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --licenses
+
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            --sdk_root="$ANDROID_HOME" --licenses || true
 
       - name: Instalar paquetes Android
         run: |
-          sdkmanager --sdk_root="$ANDROID_HOME" --install "platform-tools"
-          sdkmanager --sdk_root="$ANDROID_HOME" --install "platforms;android-33"
-          sdkmanager --sdk_root="$ANDROID_HOME" --install "build-tools;33.0.2"
-          yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            --sdk_root="$ANDROID_HOME" \
+            --install \
+            "platform-tools" \
+            "platforms;android-33" \
+            "build-tools;33.0.2"
 
-      - name: Verificar AIDL
+      - name: Comprobar AIDL
         run: |
-          echo "Buscando AIDL en el SDK..."
-          find "$ANDROID_HOME" -type f -name aidl
-          if ! find "$ANDROID_HOME" -type f -name aidl | grep -q .; then
-            echo "ERROR: AIDL no se encontró en el SDK."
+          AIDL="$ANDROID_HOME/build-tools/33.0.2/aidl"
+
+          if [ ! -x "$AIDL" ]; then
+            echo "ERROR: AIDL no se encontró."
+            find "$ANDROID_HOME/build-tools" -name aidl -type f || true
             exit 1
           fi
+
+          echo "AIDL encontrado:"
+          "$AIDL" --version
 
       - name: Instalar Buildozer
         run: |
@@ -71,7 +85,8 @@ jobs:
           pip install buildozer cython==0.29.34
 
       - name: Compilar APK
-        run: buildozer -v android debug
+        run: |
+          buildozer -v android debug
 
       - name: Guardar APK
         uses: actions/upload-artifact@v4
