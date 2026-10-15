@@ -37,7 +37,7 @@ jobs:
 
       - name: Instalar herramientas Android
         run: |
-          mkdir -p "$ANDROID_HOME"
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/android-tools.zip
           rm -rf /tmp/android-tools
           mkdir -p /tmp/android-tools
@@ -54,6 +54,16 @@ jobs:
           sdkmanager --sdk_root="$ANDROID_HOME" --install "platform-tools"
           sdkmanager --sdk_root="$ANDROID_HOME" --install "platforms;android-33"
           sdkmanager --sdk_root="$ANDROID_HOME" --install "build-tools;33.0.2"
+          yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses
+
+      - name: Verificar AIDL
+        run: |
+          echo "Buscando AIDL en el SDK..."
+          find "$ANDROID_HOME" -type f -name aidl
+          if ! find "$ANDROID_HOME" -type f -name aidl | grep -q .; then
+            echo "ERROR: AIDL no se encontró en el SDK."
+            exit 1
+          fi
 
       - name: Instalar Buildozer
         run: |
