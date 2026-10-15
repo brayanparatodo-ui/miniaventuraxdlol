@@ -10,7 +10,7 @@ orientation = landscape
 fullscreen = 1
 android.permissions =
 android.api = 33
-android.minapi = 23
+android.minapi = 21
 android.archs = arm64-v8a, armeabi-v7a
 p4a.bootstrap = sdl2
 
