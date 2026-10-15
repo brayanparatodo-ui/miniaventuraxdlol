@@ -1,4 +1,3 @@
-```ini
 [app]
 title = Miniaventura
 package.name = miniaventura
