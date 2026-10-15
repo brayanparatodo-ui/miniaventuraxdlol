@@ -7,10 +7,6 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
-    env:
-      ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
-      ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
-
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
@@ -26,61 +22,28 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Instalar dependencias Linux
+      - name: Instalar dependencias
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            git zip unzip wget \
-            autoconf libtool pkg-config \
-            zlib1g-dev libncurses5-dev libncursesw5-dev \
-            cmake libffi-dev libssl-dev automake
+          sudo apt-get install -y git zip unzip wget autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev automake
 
-      - name: Instalar herramientas Android
+      - name: Preparar SDK Android
         run: |
+          export ANDROID_HOME="$HOME/.buildozer/android/platform/android-sdk"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
           mkdir -p "$ANDROID_HOME/cmdline-tools"
-          wget -q \
-            https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
-            -O /tmp/android-tools.zip
-
-          mkdir -p /tmp/android-tools
-          unzip -q /tmp/android-tools.zip -d /tmp/android-tools
-
-          rm -rf "$ANDROID_HOME/cmdline-tools/latest"
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/tools.zip
+          mkdir -p /tmp/tools
+          unzip -q /tmp/tools.zip -d /tmp/tools
           mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
-
-          cp -a /tmp/android-tools/cmdline-tools/. \
-            "$ANDROID_HOME/cmdline-tools/latest/"
-
+          cp -a /tmp/tools/cmdline-tools/. "$ANDROID_HOME/cmdline-tools/latest/"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
           echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
-
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
-            --sdk_root="$ANDROID_HOME" --licenses || true
-
-      - name: Instalar paquetes Android
-        run: |
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
-            --sdk_root="$ANDROID_HOME" \
-            --install \
-            "platform-tools" \
-            "platforms;android-33" \
-            "build-tools;33.0.2"
-
-      - name: Comprobar AIDL
-        run: |
-          echo "SDK: $ANDROID_HOME"
-          echo "Build-tools instalados:"
-          ls -la "$ANDROID_HOME/build-tools" || true
-
-          echo "Buscando AIDL:"
-          find "$ANDROID_HOME" -type f -name aidl
-
-          if [ ! -x "$ANDROID_HOME/build-tools/33.0.2/aidl" ]; then
-            echo "ERROR: No se encontró AIDL en build-tools 33.0.2"
-            exit 1
-          fi
-
-          "$ANDROID_HOME/build-tools/33.0.2/aidl" --help
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --licenses || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          mkdir -p "$ANDROID_HOME/tools/bin"
+          ln -sf "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "$ANDROID_HOME/tools/bin/sdkmanager"
 
       - name: Instalar Buildozer
         run: |
@@ -88,8 +51,7 @@ jobs:
           pip install buildozer cython==0.29.34
 
       - name: Compilar APK
-        run: |
-          buildozer -v android debug
+        run: buildozer -v android debug
 
       - name: Guardar APK
         uses: actions/upload-artifact@v4
